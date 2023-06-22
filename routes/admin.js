@@ -3,6 +3,8 @@ const router = express.Router();
 const mongoose = require('mongoose');
 require('../models/Sobremesa');
 const Sobremesa = mongoose.model('sobremesas');
+require('../models/PratoPrincipal');
+const PratoPrincipal = mongoose.model('pratosPrincipais');
 
 router.get('/', (req,res) => {
     res.render('admin/index');
@@ -103,6 +105,52 @@ router.post('/sobremesas/deletar', (req,res) => {
         req.flash('error_msg', 'Erro ao deletar sobremesa, erro: '+erro);
         res.redirect('/admin/sobremesas');
     })
+})
+
+router.get('/pratos-principais', (req,res) => {
+    PratoPrincipal.find().lean().then((pratosPrincipais) => {
+        res.render('admin/pratosPrincipais', {pratosPrincipais:pratosPrincipais});
+    }).catch((erro) => {
+        req.flash('error_msg', 'Erro ao carregar pratos, erro: '+erro);
+        res.redirect('/admin');
+    })
+})
+
+router.get('/pratos-principais/cad', (req,res) => {
+    res.render('admin/cadpratosPrincipais');
+})
+
+router.post('/pratos-principais/novo', (req,res) => {
+    var erros = [];
+    
+    if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
+        erros.push({texto: 'Erro, nome inválido'});
+    }
+
+    if(req.body.nome.length < 3) {
+        erros.push({texto: 'Erro, nome muito pequeno'});
+    }
+
+    if(!req.body.descricao || typeof req.body.descricao == undefined || req.body.descricao == null) {
+        erros.push({texto: 'Erro, descrição inválida'});
+    }
+
+    if(erros.length > 0) {
+        res.render('admin/cadpratosPrincipais', {erros:erros});
+    } else {
+        const novoPrato = {
+            nome: req.body.nome,
+            descricao: req.body.descricao
+        }
+
+        new PratoPrincipal(novoPrato).save().then(() => {
+            req.flash('success_msg', 'Prato principal cadastrado com sucesso!!!');
+            res.redirect('/admin/pratos-principais');
+        }).catch((erro) => {
+            req.flash('error_msg', 'Erro ao cadastrar novo prato principal, erro: '+erro);
+            res.redirect('/admin/pratos-principais');
+        })
+    }
 })
 
 module.exports = router;

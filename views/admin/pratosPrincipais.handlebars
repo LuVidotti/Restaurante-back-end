@@ -1,0 +1,15 @@
+<h2>Pratos principais:</h2>
+<hr>
+
+<a href="/admin/pratos-principais/cad"><button class="btn btn-success mb-4">Cadastrar prato</button></a>
+
+{{#each pratosPrincipais}}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3>Nome: {{nome}}</h3>
+            <p>Descrição: {{descricao}}</p>
+        </div>
+    </div>
+{{else}}
+    <h4>Nenhum prato principal cadastrado</h4>
+{{/each}}
