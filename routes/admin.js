@@ -35,17 +35,12 @@ router.post('/sobremesas/nova', (req,res) => {
         erros.push({texto: 'Erro, descrição inválida'});
     }
 
-    if(!req.body.preco || typeof req.body.preco == undefined || req.body.preco == null) {
-        erros.push({texto: 'Erro, preço inválido'});
-    }
-
     if(erros.length > 0) {
         res.render('admin/cadsobremesas', {erros:erros});
     } else {
         const novaSobremesa = {
             nome: req.body.nome,
             descricao: req.body.descricao,
-            preco: req.body.preco
         }
 
         new Sobremesa(novaSobremesa).save().then(() => {
@@ -56,6 +51,58 @@ router.post('/sobremesas/nova', (req,res) => {
             res.redirect('/admin/sobremesas');
         })
     }
+})
+
+router.get('/sobremesas/edit/:id', (req,res) => {
+    Sobremesa.findOne({_id:req.params.id}).lean().then((sobremesa) => {
+        res.render('admin/editsobremesas', {sobremesa:sobremesa});
+    }).catch((erro) => {
+        req.flash('error_msg', 'Sobremesa não encontrada, erro: '+erro);
+        res.redirect('/admin/sobremesas');
+    })
+})
+
+router.post('/sobremesas/edit', (req,res) => {
+    var erros = [];
+    
+    if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
+        erros.push({texto: 'Erro, nome inválido'});
+    }
+
+    if(req.body.nome.length < 3) {
+        erros.push({texto: 'Erro, nome muito pequeno'});
+    }
+
+    if(!req.body.descricao || typeof req.body.descricao == undefined || req.body.descricao == null) {
+        erros.push({texto: 'Erro, descrição inválida'});
+    }
+
+    if(erros.length > 0) {
+        res.render('admin/editsobremesas', {erros:erros});
+    } else {
+        Sobremesa.findOne({_id:req.body.id}).then((sobremesa) => {
+            sobremesa.nome = req.body.nome;
+            sobremesa.descricao = req.body.descricao;
+
+            sobremesa.save().then(() => {
+                req.flash('success_msg', 'Sobremesa editada com sucesso!!!');
+                res.redirect('/admin/sobremesas');
+            })
+        }).catch((erro) => {
+            req.flash('error_msg', 'Erro ao editar sobremesa, erro: '+erro);
+            res.redirect('/admin/sobremesas');
+        })
+    }
+})
+
+router.post('/sobremesas/deletar', (req,res) => {
+    Sobremesa.deleteOne({_id:req.body.id}).then(() => {
+        req.flash('success_msg', 'Sobremesa deletada com sucesso!!!');
+        res.redirect('/admin/sobremesas');
+    }).catch((erro) => {
+        req.flash('error_msg', 'Erro ao deletar sobremesa, erro: '+erro);
+        res.redirect('/admin/sobremesas');
+    })
 })
 
 module.exports = router;
