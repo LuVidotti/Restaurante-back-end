@@ -52,7 +52,7 @@ const bodyParser = require('body-parser');
 app.use('/admin', admin);
 
 app.get('/', (req,res) => {
-    res.send('teste');
+    res.render('home');
 })
 
 app.listen(port, () => {
