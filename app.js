@@ -9,6 +9,8 @@ const path = require('path');
 const admin = require('./routes/admin');
 const bodyParser = require('body-parser');
 const usuarios = require('./routes/usuario');
+const passport = require('passport');
+require('./config/auth')(passport);
 
 //config
     //mongoose
@@ -26,6 +28,8 @@ const usuarios = require('./routes/usuario');
             saveUninitialized: true
         }))
 
+        app.use(passport.initialize());
+        app.use(passport.session());
         app.use(flash());
 
 
