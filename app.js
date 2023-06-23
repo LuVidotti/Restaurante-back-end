@@ -8,6 +8,7 @@ const app = express();
 const path = require('path');
 const admin = require('./routes/admin');
 const bodyParser = require('body-parser');
+const usuarios = require('./routes/usuario');
 
 //config
     //mongoose
@@ -50,6 +51,7 @@ const bodyParser = require('body-parser');
 //rotas
 
 app.use('/admin', admin);
+app.use('/usuarios', usuarios);
 
 app.get('/', (req,res) => {
     res.render('home');
