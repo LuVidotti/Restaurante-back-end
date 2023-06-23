@@ -9,6 +9,11 @@
 <body>
     {{>_nav}}
     <div class="container mt-3">
+        {{#if error}}
+            <div class="alert alert-danger">{{error}}</div>
+        {{else}}
+
+        {{/if}}
         {{>_msg}}
         {{{body}}}
     </div>
