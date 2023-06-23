@@ -180,4 +180,14 @@ router.post('/pratos-principais/edit', (req,res) => {
     })
 })
 
+router.post('/pratos-principais/deletar', (req,res) => {
+    PratoPrincipal.deleteOne({_id:req.body.id}).then(() => {
+        req.flash('success_msg', 'Prato deletado com sucesso!!!');
+        res.redirect('/admin/pratos-principais');
+    }).catch((erro) => {
+        req.flash('error_msg', 'Erro ao deletar prato principal, erro: '+erro);
+        res.redirect('/admin/pratos-principais');
+    })
+})
+
 module.exports = router;

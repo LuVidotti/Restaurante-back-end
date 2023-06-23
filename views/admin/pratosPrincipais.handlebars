@@ -9,6 +9,10 @@
             <h3>Nome: {{nome}}</h3>
             <p>Descrição: {{descricao}}</p>
             <a href="/admin/pratos-principais/edit/{{_id}}"><button class="btn btn-dark btn-sm">Editar</button></a>
+            <form action="/admin/pratos-principais/deletar" method="post">
+                <input type="hidden" name="id" value="{{_id}}">
+                <button type="submit" class="btn btn-danger btn-sm mt-2">Deletar</button>
+            </form>
         </div>
     </div>
 {{else}}
