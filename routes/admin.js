@@ -153,4 +153,31 @@ router.post('/pratos-principais/novo', (req,res) => {
     }
 })
 
+router.get('/pratos-principais/edit/:id', (req,res) => {
+    PratoPrincipal.findOne({_id:req.params.id}).lean().then((pratoPrincipal) => {
+        res.render('admin/editpratosPrincipais', {pratoPrincipal:pratoPrincipal});
+    }).catch((erro) => {
+        req.flash('error_msg', 'Erro ao encontrar id do prato, erro: '+erro);
+        res.redirect('/admin/pratos-principais');
+    })
+}) 
+
+router.post('/pratos-principais/edit', (req,res) => {
+    PratoPrincipal.findOne({_id:req.body.id}).then((pratoPrincipal) => {
+        pratoPrincipal.nome = req.body.nome;
+        pratoPrincipal.descricao = req.body.descricao;
+
+        pratoPrincipal.save().then(() => {
+            req.flash('success_msg', 'Prato principal editado com sucesso!!!');
+            res.redirect('/admin/pratos-principais');
+        }).catch((erro) => {
+            req.flash('error_msg', 'Erro ao salvar prato editado, erro: '+erro);
+            res.redirect('/admin/pratos-principais');
+        })
+    }).catch((erro) => {
+        req.flash('error_msg', 'Erro ao editar prato principal, erro: '+erro);
+        res.redirect('/admin/pratos-principais');
+    })
+})
+
 module.exports = router;

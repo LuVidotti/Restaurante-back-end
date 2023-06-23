@@ -1,0 +1,23 @@
+{{#each erros}}
+    <div class="alert alert-danger">{{texto}}</div>
+{{else}}
+
+{{/each}}
+
+<h2>Editar prato principal</h2>
+
+<div class="card">
+    <div class="card-body">
+        <form action="/admin/pratos-principais/edit" method="post">
+            <input type="hidden" name="id" value="{{pratoPrincipal._id}}">
+
+            <label for="nome">Nome do prato:</label>
+            <input type="text" id="nome" name="nome" class="form-control" required value="{{pratoPrincipal.nome}}">
+
+            <label for="descricao">Descrição:</label>
+            <textarea name="descricao" id="descricao" cols="30" rows="10" class="form-control" required>{{pratoPrincipal.descricao}}</textarea>
+
+            <button type="submit" class="btn btn-success btn-block mt-2">Editar prato</button>
+        </form>
+    </div>
+</div>
