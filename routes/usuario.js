@@ -48,7 +48,7 @@ router.post('/registro', (req,res) => {
                 const novoUsuario = {
                     nome : req.body.nome,
                     email : req.body.email,
-                    senha : hash
+                    senha : hash,
                 }
 
                 new Usuario(novoUsuario).save().then(() => {

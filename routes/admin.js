@@ -5,12 +5,13 @@ require('../models/Sobremesa');
 const Sobremesa = mongoose.model('sobremesas');
 require('../models/PratoPrincipal');
 const PratoPrincipal = mongoose.model('pratosPrincipais');
+const {eAdmin} = require('../helpers/eAdmin');
 
-router.get('/', (req,res) => {
+router.get('/', eAdmin, (req,res) => {
     res.render('admin/index');
 })
 
-router.get('/sobremesas', (req,res) => {
+router.get('/sobremesas', eAdmin, (req,res) => {
     Sobremesa.find().lean().then((sobremesas) => {
         res.render('admin/sobremesas', {sobremesas:sobremesas});
     })
@@ -18,11 +19,11 @@ router.get('/sobremesas', (req,res) => {
     
 })
 
-router.get('/sobremesas/cad', (req,res) => {
+router.get('/sobremesas/cad', eAdmin, (req,res) => {
     res.render('admin/cadsobremesas');
 })
 
-router.post('/sobremesas/nova', (req,res) => {
+router.post('/sobremesas/nova', eAdmin, (req,res) => {
     var erros = [];
     
     if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
@@ -55,7 +56,7 @@ router.post('/sobremesas/nova', (req,res) => {
     }
 })
 
-router.get('/sobremesas/edit/:id', (req,res) => {
+router.get('/sobremesas/edit/:id', eAdmin, (req,res) => {
     Sobremesa.findOne({_id:req.params.id}).lean().then((sobremesa) => {
         res.render('admin/editsobremesas', {sobremesa:sobremesa});
     }).catch((erro) => {
@@ -64,7 +65,7 @@ router.get('/sobremesas/edit/:id', (req,res) => {
     })
 })
 
-router.post('/sobremesas/edit', (req,res) => {
+router.post('/sobremesas/edit', eAdmin, (req,res) => {
     var erros = [];
     
     if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
@@ -97,7 +98,7 @@ router.post('/sobremesas/edit', (req,res) => {
     }
 })
 
-router.post('/sobremesas/deletar', (req,res) => {
+router.post('/sobremesas/deletar', eAdmin, (req,res) => {
     Sobremesa.deleteOne({_id:req.body.id}).then(() => {
         req.flash('success_msg', 'Sobremesa deletada com sucesso!!!');
         res.redirect('/admin/sobremesas');
@@ -107,7 +108,7 @@ router.post('/sobremesas/deletar', (req,res) => {
     })
 })
 
-router.get('/pratos-principais', (req,res) => {
+router.get('/pratos-principais', eAdmin, (req,res) => {
     PratoPrincipal.find().lean().then((pratosPrincipais) => {
         res.render('admin/pratosPrincipais', {pratosPrincipais:pratosPrincipais});
     }).catch((erro) => {
@@ -116,11 +117,11 @@ router.get('/pratos-principais', (req,res) => {
     })
 })
 
-router.get('/pratos-principais/cad', (req,res) => {
+router.get('/pratos-principais/cad', eAdmin, (req,res) => {
     res.render('admin/cadpratosPrincipais');
 })
 
-router.post('/pratos-principais/novo', (req,res) => {
+router.post('/pratos-principais/novo', eAdmin, (req,res) => {
     var erros = [];
     
     if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
@@ -153,7 +154,7 @@ router.post('/pratos-principais/novo', (req,res) => {
     }
 })
 
-router.get('/pratos-principais/edit/:id', (req,res) => {
+router.get('/pratos-principais/edit/:id', eAdmin, (req,res) => {
     PratoPrincipal.findOne({_id:req.params.id}).lean().then((pratoPrincipal) => {
         res.render('admin/editpratosPrincipais', {pratoPrincipal:pratoPrincipal});
     }).catch((erro) => {
@@ -162,7 +163,7 @@ router.get('/pratos-principais/edit/:id', (req,res) => {
     })
 }) 
 
-router.post('/pratos-principais/edit', (req,res) => {
+router.post('/pratos-principais/edit', eAdmin, (req,res) => {
     PratoPrincipal.findOne({_id:req.body.id}).then((pratoPrincipal) => {
         pratoPrincipal.nome = req.body.nome;
         pratoPrincipal.descricao = req.body.descricao;
@@ -180,7 +181,7 @@ router.post('/pratos-principais/edit', (req,res) => {
     })
 })
 
-router.post('/pratos-principais/deletar', (req,res) => {
+router.post('/pratos-principais/deletar', eAdmin, (req,res) => {
     PratoPrincipal.deleteOne({_id:req.body.id}).then(() => {
         req.flash('success_msg', 'Prato deletado com sucesso!!!');
         res.redirect('/admin/pratos-principais');
