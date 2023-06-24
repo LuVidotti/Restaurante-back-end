@@ -78,6 +78,13 @@ router.post('/loginpage', (req,res,next) => {
     })(req,res,next);
 })
 
+router.get('/logout', (req,res) => {
+    req.logout((erro) => {
+        req.flash('success_msg', 'Deslogado com sucesso!!!');
+        res.redirect('/');
+    })
+})
+
 module.exports = router;
 
 
