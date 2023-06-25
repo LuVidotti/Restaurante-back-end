@@ -125,6 +125,67 @@ app.post('/pedidos/novo', eUser, (req,res) => {
     }
 })
 
+app.get('/pedidos/edit/:id', eUser, (req,res) => {
+    Pedido.findOne({_id:req.params.id}).lean().then((pedido) => {
+        PratoPrincipal.find().lean().then((pratosPrincipais) => {
+            Sobremesa.find().lean().then((sobremesas) => {
+                res.render('editpedidos', {pedido:pedido, pratosPrincipais:pratosPrincipais, sobremesas:sobremesas});
+            })
+        }).catch((erro) => {
+            req.flash('error_msg', 'Erro ao encontrar pratos principais, erro: '+erro);
+            res.redirect('/');
+        })
+    }).catch((erro) => {
+        req.flash('error_msg', 'Erro ao encontrar id do pedido, erro: '+erro);
+        res.redirect('/');
+    })
+})
+
+app.post('/pedidos/edit', eUser, (req,res) => {
+    var erros = [];
+
+    if(!req.body.mesa || typeof req.body.mesa == undefined || req.body.mesa == null) {
+        erros.push({texto:'Número de mesa inválido'});
+    }
+
+    if(req.body.mesa < 1) {
+        erros.push({texto: 'Não existem mesas com número menor que 1'});
+    }
+
+    if(!req.body.pratoPrincipal || typeof req.body.pratoPrincipal == undefined || req.body.pratoPrincipal == null) {
+        erros.push({texto:'Prato principal inválido'});
+    }
+
+    if(!req.body.sobremesa || typeof req.body.sobremesa == undefined || req.body.sobremesa == null) {
+        erros.push({texto:'Sobremesa inválida'});
+    }
+
+    if(erros.length > 0) {
+        res.render('editpedidos', {erros:erros});
+    } else {
+        Pedido.findOne({_id:req.body.id}).then((pedido) => {
+            pedido.mesa = req.body.mesa;
+            pedido.pratoPrincipal = req.body.pratoPrincipal;
+            pedido.sobremesa = req.body.sobremesa;
+            pedido.observacao = req.body.observacao;
+            pedido.data = Date.now();
+
+            pedido.save().then(() => {
+                req.flash('success_msg', 'Pedido editado com sucesso!!!');
+                res.redirect('/');
+            }).catch((erro) => {
+                req.flash('error_msg', 'Erro ao editar pedido, erro: '+erro);
+                res.redirect('/');
+            })
+        }).catch((erro) => {
+            req.flash('error_msg', 'Erro ao receber id do pedido, erro: '+erro);
+            res.redirect('/');
+        })
+    }
+    
+    
+})
+
 app.listen(port, () => {
     console.log('Servidor rodando na porta 3000!!!');
 })

@@ -4,11 +4,13 @@
 
 {{/each}}
 
-<h2>Cadastrar pedido</h2>
+<h2>Editar pedido</h2>
 
 <div class="card">
     <div class="card-body">
-        <form action="/pedidos/novo" method="post">
+        <form action="/pedidos/edit" method="post">
+            <input type="hidden" name="id" value="{{pedido._id}}">
+
             <label for="mesa">Mesa:</label>
             <input type="number" name="mesa" id="mesa" required class="form-control">
 
@@ -29,7 +31,7 @@
             <label for="observacao">Observações:</label>
             <input type="text" name="observacao" id="observacao" placeholder="Ex: adicional de queijo" class="form-control">
 
-            <button type="submit" class="btn btn-success btn-block mt-2">Adicionar pedido</button>
+            <button type="submit" class="btn btn-success btn-block mt-2">Editar pedido</button>
         </form>
     </div>
 </div>

@@ -4,7 +4,7 @@ module.exports = {
             return next();
         }
 
-        req.flash('error_msg', 'Voce deve estar logado para adicionar pedidos');
+        req.flash('error_msg', 'Voce deve estar logado para organizar pedidos');
         res.redirect('/');
     }
 }
