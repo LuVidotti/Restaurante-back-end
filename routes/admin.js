@@ -263,4 +263,73 @@ router.post('/registro', eAdmin, (req,res) => {
     }
 })
 
+router.get('/usuarios/edit/:id', eAdmin, (req,res) => {
+    Usuario.findOne({_id:req.params.id}).lean().then((usuario) => {
+        res.render('admin/editusuarios', {usuario:usuario});
+    }).catch((erro) => {
+        req.flash('error_msg', 'Erro ao encontrar id do usuario, erro: '+erro);
+        res.redirect('/admin');
+    })
+})
+
+router.post('/usuarios/edit', eAdmin, (req,res) => {
+    var erros = [];
+
+    if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
+        erros.push({texto: 'nome inválido'})
+    }
+
+    if(!req.body.email || typeof req.body.email == undefined || req.body.email == null) {
+        erros.push({texto: 'E-mail inválido'});
+    }
+
+    if(!req.body.senha || typeof req.body.senha == undefined || req.body.senha == null) {
+        erros.push({texto: 'senha inválida'});
+    }
+
+    if(req.body.senha.length < 4) {
+        erros.push({texto: 'senha muito curta'});
+    }
+
+    if(req.body.senha != req.body.senha2) {
+        erros.push({texto: 'As senhas devem coincidir'});
+    }
+
+    if(erros.length > 0) {
+        res.render('admin/editusuarios', {erros:erros});
+    } else {
+        Usuario.findOne({_id:req.body.id}).then((usuario) => {
+            usuario.nome = req.body.nome;
+            usuario.email = req.body.email
+    
+            if(req.body.senha) {
+                var salt = bcrypt.genSaltSync(10);
+                var hash = bcrypt.hashSync(req.body.senha, salt);
+                usuario.senha = hash;
+            }
+    
+            usuario.save().then(() => {
+                req.flash('success_msg', 'Usuário editado com sucesso!!!');
+                res.redirect('/admin/usuarios');
+            }).catch((erro) => {
+                req.flash('error_msg', 'Erro ao salvar usuário editado, erro: '+erro);
+                res.redirect('/admin/usuarios');
+            })
+        }).catch((erro) => {
+            req.flash('error_msg', 'Erro ao fornecer id do usuario, erro: '+erro);
+            res.redirect('/admin');
+        })
+    } 
+})
+
+router.post('/usuarios/deletar', eAdmin, (req,res) => {
+    Usuario.deleteOne({_id:req.body.id}).then(() => {
+        req.flash('success_msg', 'Usuário deletado com sucesso!!!');
+        res.redirect('/admin/usuarios');
+    }).catch((erro) => {
+        req.flash('error_msg', 'Erro ao deletar usuário, erro: '+erro);
+        res.redirect('/admin/usuarios');
+    })
+})
+
 module.exports = router;
