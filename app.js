@@ -11,6 +11,13 @@ const bodyParser = require('body-parser');
 const usuarios = require('./routes/usuario');
 const passport = require('passport');
 require('./config/auth')(passport);
+require('./models/PratoPrincipal');
+const PratoPrincipal = mongoose.model('pratosPrincipais');
+require('./models/Sobremesa');
+const Sobremesa = mongoose.model('sobremesas');
+require('./models/Pedido');
+const Pedido = mongoose.model('pedidos');
+const {eUser} = require('./helpers/eUser');
 
 //config
     //mongoose
@@ -60,7 +67,62 @@ app.use('/admin', admin);
 app.use('/usuarios', usuarios);
 
 app.get('/', (req,res) => {
-    res.render('home');
+    Pedido.find().populate('pratoPrincipal').populate('sobremesa').sort({data: 'desc'}).lean().then((pedidos) => {
+        res.render('home', {pedidos:pedidos});
+    })
+})
+
+app.get('/pedidos/cad', eUser, (req,res) => {
+    PratoPrincipal.find().lean().then((pratosPrincipais) => {
+        Sobremesa.find().lean().then((sobremesas) => {
+            res.render('cadpedidos', {pratosPrincipais:pratosPrincipais, sobremesas:sobremesas});
+        }).catch((erro) => {
+            req.flash('error_msg', 'Erro ao encontrar sobremesas, erro: '+erro);
+            res.redirect('/');
+        })
+    }).catch((erro) => {
+        req.flash('error_msg', 'Erro ao encontrar pratos principais, erro: '+erro);
+        res.redirect('/');
+    })
+})
+
+app.post('/pedidos/novo', eUser, (req,res) => {
+    var erros = [];
+
+    if(!req.body.mesa || typeof req.body.mesa == undefined || req.body.mesa == null) {
+        erros.push({texto:'Número de mesa inválido'});
+    }
+
+    if(req.body.mesa < 1) {
+        erros.push({texto: 'Não existem mesas com número menor que 1'});
+    }
+
+    if(!req.body.pratoPrincipal || typeof req.body.pratoPrincipal == undefined || req.body.pratoPrincipal == null) {
+        erros.push({texto:'Prato principal inválido'});
+    }
+
+    if(!req.body.sobremesa || typeof req.body.sobremesa == undefined || req.body.sobremesa == null) {
+        erros.push({texto:'Sobremesa inválida'});
+    }
+
+    if(erros.length > 0) {
+        res.render('cadpedidos', {erros:erros});
+    } else {
+        const novoPedido = {
+            mesa: req.body.mesa,
+            pratoPrincipal: req.body.pratoPrincipal,
+            sobremesa: req.body.sobremesa,
+            observacao:req.body.observacao
+        }
+
+        new Pedido(novoPedido).save().then(() => {
+            req.flash('success_msg', 'Pedido cadastrado com sucesso!!!');
+            res.redirect('/');
+        }).catch((erro) => {
+            req.flash('error_msg', 'Erro ao salvar novo pedido, erro: '+erro);
+            res.redirect('/');
+        })
+    }
 })
 
 app.listen(port, () => {

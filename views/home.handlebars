@@ -2,5 +2,20 @@
   <div class="container">
     <h1 class="display-4">Página inicial</h1>
     <p class="lead">Adicione, organize e veja os pedidos que foram feitos, por aqui!!!</p>
+    <a href="/pedidos/cad"><button class="btn btn-primary">Adicionar pedido</button></a>
   </div>
 </div>
+
+{{#each pedidos}} 
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4>Mesa: {{mesa}}</h4>
+      <h5>Prato principal: {{pratoPrincipal.nome}}</h5>
+      <h6>Sobremesa: {{sobremesa.nome}}</h6>
+      <p>Observações: {{observacao}}</p>
+      <small>Data de criação: {{data}}</small>
+    </div>
+  </div>
+{{else}} 
+  <h4>Nenhum Pedido cadastrado</h4>
+{{/each}}

@@ -1,0 +1,33 @@
+{{#each erros}}
+    <div class="alert alert-danger">{{texto}}</div>
+{{else}}
+
+{{/each}}
+
+<div class="card">
+    <div class="card-body">
+        <form action="/pedidos/novo" method="post">
+            <label for="mesa">Mesa:</label>
+            <input type="number" name="mesa" id="mesa" required class="form-control">
+
+            <label for="pratoPrincipal">Prato principal:</label>
+            <select name="pratoPrincipal" id="pratoPrincipal" class="form-control">
+                {{#each pratosPrincipais}}
+                    <option value="{{_id}}">{{nome}}</option>
+                {{/each}}
+            </select>
+
+            <label for="sobremesa">Sobremesa:</label>
+            <select name="sobremesa" id="sobremesa" class="form-control">
+                {{#each sobremesas}}
+                    <option value="{{_id}}">{{nome}}</option>
+                {{/each}}
+            </select>
+
+            <label for="observacao">Observações:</label>
+            <input type="text" name="observacao" id="observacao" placeholder="Ex: adicional de queijo" class="form-control">
+
+            <button type="submit" class="btn btn-success btn-block mt-2">Adicionar pedido</button>
+        </form>
+    </div>
+</div>
