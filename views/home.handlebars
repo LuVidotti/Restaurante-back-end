@@ -14,7 +14,11 @@
       <h6>Sobremesa: {{sobremesa.nome}}</h6>
       <p>Observações: {{observacao}}</p>
       <small>Data de criação: {{data}}</small> <br>
-      <a href="/pedidos/edit/{{_id}}"><button class="btn btn-dark">Editar</button></a>
+      <a href="/pedidos/edit/{{_id}}"><button class="btn btn-dark btn-sm">Editar</button></a>
+      <form action="/pedidos/deletar" method="post">
+        <input type="hidden" name="id" value="{{_id}}">
+        <button type="submit" class="btn btn-danger btn-sm mt-2">Deletar</button>
+      </form>
     </div>
   </div>
 {{else}} 

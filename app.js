@@ -183,7 +183,16 @@ app.post('/pedidos/edit', eUser, (req,res) => {
         })
     }
     
-    
+})
+
+app.post('/pedidos/deletar', eUser, (req,res) => {
+    Pedido.deleteOne({_id:req.body.id}).then(() => {
+        req.flash('success_msg', 'Pedido deletado com sucesso!!!');
+        res.redirect('/');
+    }).catch((erro) => {
+        req.flash('error_msg', 'Erro ao deletar pedido, erro: '+erro);
+        res.redirect('/');
+    })
 })
 
 app.listen(port, () => {
