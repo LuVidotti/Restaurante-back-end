@@ -6,6 +6,8 @@ const Sobremesa = mongoose.model('sobremesas');
 require('../models/PratoPrincipal');
 const PratoPrincipal = mongoose.model('pratosPrincipais');
 const {eAdmin} = require('../helpers/eAdmin');
+require('../models/Usuario');
+const Usuario = mongoose.model('usuarios');
 
 router.get('/', eAdmin, (req,res) => {
     res.render('admin/index');
@@ -188,6 +190,15 @@ router.post('/pratos-principais/deletar', eAdmin, (req,res) => {
     }).catch((erro) => {
         req.flash('error_msg', 'Erro ao deletar prato principal, erro: '+erro);
         res.redirect('/admin/pratos-principais');
+    })
+})
+
+router.get('/usuarios', (req,res) => {
+    Usuario.find().lean().then((usuarios) => {
+        res.render('admin/usuarios', {usuarios:usuarios});
+    }).catch((erro) => {
+        req.flash('error_msg', 'Erro ao listar usuarios, erro: '+erro);
+        res.redirect('/admin');
     })
 })
 
