@@ -95,4 +95,85 @@ router.delete('/sobremesas/:id', (req,res) => {
 
 
 
+
+//Pratos Principais
+
+router.get('/pratos-principais', (req,res) => {
+    PratoPrincipal.find().then((pratosPrincipais) => {
+        res.status(200).json(pratosPrincipais);
+    }).catch((erro) => {
+        res.status(500).json({erro: 'Houve um erro'});
+    })
+})
+
+router.post('/pratos-principais', (req,res) => {
+    var erros = [];
+    
+    if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
+        erros.push({texto: 'Erro, nome inválido'});
+    }
+
+    if(req.body.nome.length < 3) {
+        erros.push({texto: 'Erro, nome muito pequeno'});
+    }
+
+    if(!req.body.descricao || typeof req.body.descricao == undefined || req.body.descricao == null) {
+        erros.push({texto: 'Erro, descrição inválida'});
+    }
+
+    if(erros.length > 0) {
+        res.status(400).json(erros);
+    } else {
+        const novoPrato = {
+            nome: req.body.nome,
+            descricao: req.body.descricao
+        }
+
+        new PratoPrincipal(novoPrato).save().then(() => {
+            res.status(201).json({message: 'Prato principal cadastrado com sucesso!!!', novoPrato:novoPrato})
+        }).catch((erro) => {
+            res.status(500).json({erro: 'Houve um erro'});
+        })
+    }
+})
+
+router.put('/pratos-principais/:id', (req,res) => {
+    var erros = [];
+    
+    if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
+        erros.push({texto: 'Erro, nome inválido'});
+    }
+
+    if(req.body.nome.length < 3) {
+        erros.push({texto: 'Erro, nome muito pequeno'});
+    }
+
+    if(!req.body.descricao || typeof req.body.descricao == undefined || req.body.descricao == null) {
+        erros.push({texto: 'Erro, descrição inválida'});
+    }
+
+    if(erros.length > 0) {
+        res.status(400).json(erros);
+    } else {
+        PratoPrincipal.findOne({_id: req.params.id}).then((pratoPrincipal) => {
+            pratoPrincipal.nome = req.body.nome;
+            pratoPrincipal.descricao = req.body.descricao;
+
+            pratoPrincipal.save().then((prato) => {
+                res.status(201).json({message: 'Prato principal editado com sucesso!!!', prato:prato});
+            }).catch((erro) => {
+                res.status(500).json({erro: 'Houve um erro'});
+            })
+        })
+    }
+})
+
+router.delete('/pratos-principais/:id', (req,res) => {
+    PratoPrincipal.deleteOne({_id:req.params.id}).then((pratoPrincipal) => {
+        res.status(201).json({message: 'Prato principal deletado com sucesso!!!', pratoPrincipal:pratoPrincipal});
+    }).catch((erro) => {
+        res.status(500).json({erro: 'Houve um erro'});
+    })
+})
+
 module.exports = router;
