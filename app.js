@@ -18,6 +18,7 @@ const Sobremesa = mongoose.model('sobremesas');
 require('./models/Pedido');
 const Pedido = mongoose.model('pedidos');
 const {eUser} = require('./helpers/eUser');
+const api = require('./routes/api');
 
 //config
     //mongoose
@@ -65,6 +66,7 @@ const {eUser} = require('./helpers/eUser');
 
 app.use('/admin', admin);
 app.use('/usuarios', usuarios);
+app.use('/api', api);
 
 app.get('/', (req,res) => {
     Pedido.find().populate('pratoPrincipal').populate('sobremesa').sort({data: 'desc'}).lean().then((pedidos) => {

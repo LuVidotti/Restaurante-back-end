@@ -72,6 +72,11 @@ router.get('/login', (req,res) => {
 })
 
 router.post('/loginpage', (req,res,next) => {
+    Usuario.findOne({email:req.body.email}).then((usuario) => {
+        usuario.numero = usuario.numero + 1;
+
+        usuario.save();
+    })
     passport.authenticate('local', {
         successRedirect: '/',
         failureRedirect: '/usuarios/login',
@@ -147,6 +152,10 @@ router.post('/edit', eUser, (req,res) => {
             res.redirect('/usuarios/perfil');
         })
     }
+})
+
+router.get('/numero', (req,res) => {
+    res.render('usuario/numero', {usuario:req.user});
 })
 
 module.exports = router;
