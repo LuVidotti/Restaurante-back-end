@@ -76,8 +76,8 @@ router.put('/sobremesas/:id', (req,res) => {
             sobremesa.nome = req.body.nome;
             sobremesa.descricao = req.body.descricao;
 
-            sobremesa.save().then(() => {
-                res.status(201).json({message: 'Sobremesa editada com sucesso!!!', sobremesa:sobremesa});
+            sobremesa.save().then((sobremesaAtt) => {
+                res.status(201).json({message: 'Sobremesa editada com sucesso!!!', sobremesa:sobremesaAtt});
             }).catch((erro) => {
                 res.status(500).json({erro: 'Houve um erro'});
             })
@@ -171,6 +171,99 @@ router.put('/pratos-principais/:id', (req,res) => {
 router.delete('/pratos-principais/:id', (req,res) => {
     PratoPrincipal.deleteOne({_id:req.params.id}).then((pratoPrincipal) => {
         res.status(201).json({message: 'Prato principal deletado com sucesso!!!', pratoPrincipal:pratoPrincipal});
+    }).catch((erro) => {
+        res.status(500).json({erro: 'Houve um erro'});
+    })
+})
+
+//Pedidos
+
+router.get('/pedidos', (req,res) => {
+    Pedido.find().populate('pratoPrincipal').populate('sobremesa').then((pedidos) => {
+        res.status(200).json(pedidos);
+    }).catch((erro) => {
+        res.status(500).json({erro: 'Houve um erro'});
+    })
+})
+
+router.post('/pedidos', (req,res) => {
+    let erros = [];
+
+    if(!req.body.mesa || typeof req.body.mesa == undefined || req.body.mesa == null) {
+        erros.push({texto:'Número de mesa inválido'});
+    }
+
+    if(req.body.mesa < 1) {
+        erros.push({texto: 'Não existem mesas com número menor que 1'});
+    }
+
+    if(!req.body.pratoPrincipal || typeof req.body.pratoPrincipal == undefined || req.body.pratoPrincipal == null) {
+        erros.push({texto:'Prato principal inválido'});
+    }
+
+    if(!req.body.sobremesa || typeof req.body.sobremesa == undefined || req.body.sobremesa == null) {
+        erros.push({texto:'Sobremesa inválida'});
+    }
+
+    if(erros.length > 0) {
+        res.status(400).json(erros);
+    } else {
+        const novoPedido = {
+            mesa: req.body.mesa,
+            pratoPrincipal: req.body.pratoPrincipal,
+            sobremesa: req.body.sobremesa,
+            observacao:req.body.observacao
+        }
+
+        new Pedido(novoPedido).save().then(() => {
+            res.status(201).json({message: 'Pedido adicionado com sucesso!!!', novoPedido:novoPedido});
+        }).catch((erro) => {
+            res.status(500).json({erro: 'Houve um erro'});
+        })
+    }
+})
+
+router.put('/pedidos/:id', (req,res) => {
+    let erros = [];
+
+    if(!req.body.mesa || typeof req.body.mesa == undefined || req.body.mesa == null) {
+        erros.push({texto:'Número de mesa inválido'});
+    }
+
+    if(req.body.mesa < 1) {
+        erros.push({texto: 'Não existem mesas com número menor que 1'});
+    }
+
+    if(!req.body.pratoPrincipal || typeof req.body.pratoPrincipal == undefined || req.body.pratoPrincipal == null) {
+        erros.push({texto:'Prato principal inválido'});
+    }
+
+    if(!req.body.sobremesa || typeof req.body.sobremesa == undefined || req.body.sobremesa == null) {
+        erros.push({texto:'Sobremesa inválida'});
+    }
+
+    if(erros.length > 0) {
+        res.status(400).json(erros);
+    } else {
+        Pedido.findOne({_id: req.params.id}).then((pedido) => {
+            pedido.mesa = req.body.mesa
+            pedido.pratoPrincipal = req.body.pratoPrincipal;
+            pedido.sobremesa = req.body.sobremesa;
+            pedido.observacao = req.body.observacao;
+            pedido.data = Date.now();
+
+            pedido.save().then((pedidoAtt) => {
+                res.status(201).json({message: 'Pedido editado com sucesso!!!', pedido:pedidoAtt});
+            }).catch((erro) => {
+                res.status(500).json({erro: 'Houve um erro'});
+            })
+        })
+    }
+})
+
+router.delete('/pedidos/:id', (req,res) => {
+    Pedido.deleteOne({_id:req.params.id}).then((pedido) => {
+        res.status(201).json({message: 'Pedido deletado com sucesso!!!', pedido:pedido})
     }).catch((erro) => {
         res.status(500).json({erro: 'Houve um erro'});
     })
