@@ -341,6 +341,42 @@ router.get('/usuarios', verificaJWTadmin, (req,res) => {
     })
 });
 
+router.put('/usuarios/:id', verificaJWTadmin, (req,res) => {
+    var erros = [];
+
+    if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
+        erros.push({texto: 'nome inválido'})
+    }
+
+    if(!req.body.email || typeof req.body.email == undefined || req.body.email == null) {
+        erros.push({texto: 'E-mail inválido'});
+    }
+
+    if(erros.length > 0) {
+        return res.status(400).json(erros);
+    } else {
+        Usuario.findOne({_id: req.params.id}).then((usuario) => {
+            usuario.nome = req.body.nome;
+            usuario.email = req.body.email;
+
+            usuario.save().then((usuarioAtt) => {
+                res.status(201).json({message: 'Usuario atualizado com sucesso', usuarioAtt:usuarioAtt});
+            }).catch((erro) => {
+                res.status(500).json(erro);
+            })
+        })
+    }
+    
+})
+
+router.delete('/usuarios/:id', verificaJWTadmin, (req,res) => {
+    Usuario.deleteOne({_id: req.params.id}).then((usuario) => {
+        res.status(201).json({message: 'Usuario deletado com sucesso', usuario:usuario});
+    }).catch((erro) => {
+        return res.status(500).json(erro);
+    })
+})
+
 //registro de admins
 
 router.post('/admin', verificaJWTadmin, (req,res) => {
