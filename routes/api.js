@@ -15,8 +15,15 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const SECRET = 'luisfelipevidotti';
 
+const listaDeTokens = [];
+
 function verificaJwt(req,res,next) {
     const token = req.headers['authorization']
+    const index = listaDeTokens.findIndex((t) => t == token);  //Verifica se o token ja sofreu logout
+
+    if(index != -1) {
+        return res.status(400).end();
+    }
    
     jwt.verify(token, SECRET, (erro, decoded) => {
         if(erro) {
@@ -247,7 +254,7 @@ router.post('/pedidos', verificaJwt, (req,res) => {
     }
 })
 
-router.put('/pedidos/:id', (req,res) => {
+router.put('/pedidos/:id', verificaJwt, (req,res) => {
     let erros = [];
 
     if(!req.body.mesa || typeof req.body.mesa == undefined || req.body.mesa == null) {
@@ -285,7 +292,7 @@ router.put('/pedidos/:id', (req,res) => {
     }
 })
 
-router.delete('/pedidos/:id', (req,res) => {
+router.delete('/pedidos/:id', verificaJwt, (req,res) => {
     Pedido.deleteOne({_id:req.params.id}).then((pedido) => {
         res.status(201).json({message: 'Pedido deletado com sucesso!!!', pedido:pedido})
     }).catch((erro) => {
@@ -375,6 +382,11 @@ router.post('/usuarios/login', (req,res) => {
             }
         })
     })
+})
+
+router.post('/usuarios/logout', (req,res) => {
+    listaDeTokens.push(req.headers['authorization']);
+    res.end();
 })
 
 module.exports = router;
