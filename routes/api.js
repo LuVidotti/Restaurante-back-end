@@ -11,6 +11,7 @@ require('../models/Pedido');
 const Pedido = mongoose.model('pedidos');
 require('../models/Usuario');
 const Usuario = mongoose.model('usuarios');
+const bcrypt = require('bcryptjs');
 
 //Sobremesas
 
@@ -267,6 +268,67 @@ router.delete('/pedidos/:id', (req,res) => {
     }).catch((erro) => {
         res.status(500).json({erro: 'Houve um erro'});
     })
+})
+
+//Usuarios
+
+router.get('/usuarios', (req,res) => {
+    Usuario.find().then((usuarios) => {
+        res.status(200).json(usuarios);
+    }).catch((erro) => {
+        res.status(500).json(erro);
+    })
+});
+
+//Registro pessoal
+
+router.post('/usuarios/registro', (req,res) => {
+    var erros = [];
+
+    if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
+        erros.push({texto: 'nome inválido'})
+    }
+
+    if(!req.body.email || typeof req.body.email == undefined || req.body.email == null) {
+        erros.push({texto: 'E-mail inválido'});
+    }
+
+    if(!req.body.senha || typeof req.body.senha == undefined || req.body.senha == null) {
+        erros.push({texto: 'senha inválida'});
+    }
+
+    if(req.body.senha.length < 4) {
+        erros.push({texto: 'senha muito curta'});
+    }
+
+    if(req.body.senha != req.body.senha2) {
+        erros.push({texto: 'As senhas devem coincidir'});
+    }
+
+    if(erros.length > 0) {
+        res.status(400).json(erros);
+    } else {
+        Usuario.findOne({email:req.body.email}).then((usuario) => {
+            if(usuario) {
+                return res.status(400).json({message: 'Erro, ja existe um usuario com este email'});
+            }
+
+            var salt = bcrypt.genSaltSync(10);
+            var hash = bcrypt.hashSync(req.body.senha, salt);
+
+            const novoUsuario = {
+                nome: req.body.nome,
+                email: req.body.email,
+                senha: hash
+            }
+
+            new Usuario(novoUsuario).save().then(() => {
+                res.status(201).json({message: 'Usuario registrado com sucesso!!!', novoUsuario:novoUsuario});
+            }).catch((erro) => {
+                res.status(500).json(erro);
+            })
+        })
+    }
 })
 
 module.exports = router;
