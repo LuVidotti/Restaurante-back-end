@@ -13,9 +13,40 @@ require('../models/Usuario');
 const Usuario = mongoose.model('usuarios');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const SECRET = 'luisfelipevidotti';
+const SECRETUSER = 'user';
+const SECRETADMIN = 'admin';
 
 const listaDeTokens = [];
+
+function verificaJWTadmin(req,res,next) {
+    const token = req.headers['authorization'];
+    const index = listaDeTokens.findIndex((t) => t == token);  //Verifica se o token ja sofreu logout
+
+    if(index != -1) {
+        return res.status(400).end();
+    }
+
+    jwt.verify(token, SECRETADMIN, (erro,decoded) => {
+        if(erro) {
+            return res.status(500).json({auth: false, message: 'Token invalido, voce nao e admin'})
+        }
+
+        Usuario.findOne({_id: decoded.id}).then((user) => {
+            if(!user) {
+                return res.status(400).json({auth: false, message: 'Usuário não encontrado'});
+            }
+
+            if(user.eAdmin != 1) {
+                return res.status(400).json({auth: false, message: 'Apenas administradores podem entrar aqui'});
+            }
+
+            req.user = user;
+            next();
+        }).catch((erro) => {
+            res.status(500).json(erro);
+        })
+    })
+}
 
 function verificaJwt(req,res,next) {
     const token = req.headers['authorization']
@@ -25,9 +56,9 @@ function verificaJwt(req,res,next) {
         return res.status(400).end();
     }
    
-    jwt.verify(token, SECRET, (erro, decoded) => {
+    jwt.verify(token, SECRETUSER, (erro, decoded) => {
         if(erro) {
-            return res.status(500).json({auth: false, message: 'Token invalido'})
+            return res.status(500).json({auth: false, message: 'Token invalido, precisa estar logado'})
         }
 
         Usuario.findOne({_id: decoded.id}).then((user) => {
@@ -45,7 +76,7 @@ function verificaJwt(req,res,next) {
 
 //Sobremesas
 
-router.get('/sobremesas', (req,res) => {
+router.get('/sobremesas', verificaJWTadmin, (req,res) => {
     Sobremesa.find().then((sobremesas) => {
         res.status(200).json(sobremesas);
     }).catch((erro) => {
@@ -53,7 +84,7 @@ router.get('/sobremesas', (req,res) => {
     })
 })
 
-router.post('/sobremesas', (req,res) => {
+router.post('/sobremesas', verificaJWTadmin, (req,res) => {
     var erros = [];
     
     if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
@@ -85,7 +116,7 @@ router.post('/sobremesas', (req,res) => {
     
 })
 
-router.put('/sobremesas/:id', (req,res) => {
+router.put('/sobremesas/:id', verificaJWTadmin, (req,res) => {
     var erros = [];
     
     if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
@@ -116,7 +147,7 @@ router.put('/sobremesas/:id', (req,res) => {
     }
 })
 
-router.delete('/sobremesas/:id', (req,res) => {
+router.delete('/sobremesas/:id', verificaJWTadmin, (req,res) => {
     Sobremesa.deleteOne({_id:req.params.id}).then((sobremesa) => {
         res.status(200).json({message: 'Sobremesa deletada com sucesso!!!', sobremesa:sobremesa});
     }).catch((erro) => {
@@ -129,7 +160,7 @@ router.delete('/sobremesas/:id', (req,res) => {
 
 //Pratos Principais
 
-router.get('/pratos-principais', (req,res) => {
+router.get('/pratos-principais', verificaJWTadmin, (req,res) => {
     PratoPrincipal.find().then((pratosPrincipais) => {
         res.status(200).json(pratosPrincipais);
     }).catch((erro) => {
@@ -137,7 +168,7 @@ router.get('/pratos-principais', (req,res) => {
     })
 })
 
-router.post('/pratos-principais', (req,res) => {
+router.post('/pratos-principais', verificaJWTadmin, (req,res) => {
     var erros = [];
     
     if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
@@ -168,7 +199,7 @@ router.post('/pratos-principais', (req,res) => {
     }
 })
 
-router.put('/pratos-principais/:id', (req,res) => {
+router.put('/pratos-principais/:id', verificaJWTadmin, (req,res) => {
     var erros = [];
     
     if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
@@ -199,7 +230,7 @@ router.put('/pratos-principais/:id', (req,res) => {
     }
 })
 
-router.delete('/pratos-principais/:id', (req,res) => {
+router.delete('/pratos-principais/:id', verificaJWTadmin, (req,res) => {
     PratoPrincipal.deleteOne({_id:req.params.id}).then((pratoPrincipal) => {
         res.status(201).json({message: 'Prato principal deletado com sucesso!!!', pratoPrincipal:pratoPrincipal});
     }).catch((erro) => {
@@ -302,7 +333,7 @@ router.delete('/pedidos/:id', verificaJwt, (req,res) => {
 
 //Usuarios
 
-router.get('/usuarios', (req,res) => {
+router.get('/usuarios', verificaJWTadmin, (req,res) => {
     Usuario.find().then((usuarios) => {
         res.status(200).json(usuarios);
     }).catch((erro) => {
@@ -375,8 +406,16 @@ router.post('/usuarios/login', (req,res) => {
             }
 
             if(batem) { 
-                const token = jwt.sign({id: usuario._id}, SECRET, {expiresIn: '1 hr'});
-                res.json({auth:true, token:token});
+                if(usuario.eAdmin == 0) {
+                    const token = jwt.sign({id: usuario._id}, SECRETUSER, {expiresIn: '1 hr'});
+                    res.json({auth:true, token:token});
+                }
+
+                if(usuario.eAdmin == 1) {
+                    const token = jwt.sign({id: usuario._id}, SECRETADMIN, {expiresIn: '1 hr'});
+                    res.json({auth: true, token:token});
+                }
+                
             } else {
                 return res.status(400).json({message: 'Senha incorreta'});
             }
