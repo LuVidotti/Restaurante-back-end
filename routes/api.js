@@ -331,7 +331,7 @@ router.delete('/pedidos/:id', verificaJwt, (req,res) => {
     })
 })
 
-//Usuarios
+//Usuarios (funções de usuários somente para admins)
 
 router.get('/usuarios', verificaJWTadmin, (req,res) => {
     Usuario.find().then((usuarios) => {
@@ -340,6 +340,58 @@ router.get('/usuarios', verificaJWTadmin, (req,res) => {
         res.status(500).json(erro);
     })
 });
+
+//registro de admins
+
+router.post('/admin', verificaJWTadmin, (req,res) => {
+    var erros = [];
+
+    if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
+        erros.push({texto: 'nome inválido'})
+    }
+
+    if(!req.body.email || typeof req.body.email == undefined || req.body.email == null) {
+        erros.push({texto: 'E-mail inválido'});
+    }
+
+    if(!req.body.senha || typeof req.body.senha == undefined || req.body.senha == null) {
+        erros.push({texto: 'senha inválida'});
+    }
+
+    if(req.body.senha.length < 4) {
+        erros.push({texto: 'senha muito curta'});
+    }
+
+    if(req.body.senha != req.body.senha2) {
+        erros.push({texto: 'As senhas devem coincidir'});
+    }
+
+    if(erros.length > 0) {
+        return res.status(400).json(erros);
+    } else {
+        Usuario.findOne({email: req.body.email}).then((usuario) => {
+            if(usuario) {
+                return res.status(400).json({message: 'Ja existe um admin com este email'});
+            } else {
+                var salt = bcrypt.genSaltSync(10);
+                var hash = bcrypt.hashSync(req.body.senha, salt);
+
+                const novoAdmin = {
+                    nome: req.body.nome,
+                    email: req.body.email,
+                    senha: hash,
+                    eAdmin: 1
+                }
+
+                new Usuario(novoAdmin).save().then(() => {
+                    res.status(201).json({message: 'Admin cadastrado com sucesso', novoAdmin:novoAdmin});
+                }).catch((erro) => {
+                    res.status(500).json(erro);
+                })
+            }
+        })
+    }
+})
 
 //Registro pessoal
 
