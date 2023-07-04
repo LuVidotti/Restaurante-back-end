@@ -12,6 +12,29 @@ const Pedido = mongoose.model('pedidos');
 require('../models/Usuario');
 const Usuario = mongoose.model('usuarios');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const SECRET = 'luisfelipevidotti';
+
+function verificaJwt(req,res,next) {
+    const token = req.headers['authorization']
+   
+    jwt.verify(token, SECRET, (erro, decoded) => {
+        if(erro) {
+            return res.status(500).json({auth: false, message: 'Token invalido'})
+        }
+
+        Usuario.findOne({_id: decoded.id}).then((user) => {
+            if(!user) {
+                return res.status(400).json({auth: false, message: 'Usuário não encontrado'});
+            }
+
+            req.user = user;
+            next();
+        }).catch((erro) => {
+            res.status(500).json(erro);
+        })
+    })
+}
 
 //Sobremesas
 
@@ -187,7 +210,7 @@ router.get('/pedidos', (req,res) => {
     })
 })
 
-router.post('/pedidos', (req,res) => {
+router.post('/pedidos', verificaJwt, (req,res) => {
     let erros = [];
 
     if(!req.body.mesa || typeof req.body.mesa == undefined || req.body.mesa == null) {
@@ -329,6 +352,29 @@ router.post('/usuarios/registro', (req,res) => {
             })
         })
     }
+})
+
+//Login com jwt
+
+router.post('/usuarios/login', (req,res) => {
+    Usuario.findOne({email:req.body.email}).then((usuario) => {
+        if(!usuario) {
+            return res.status(400).json({message: 'Não há um usuário com este e-mail'})
+        }
+
+        bcrypt.compare(req.body.senha, usuario.senha, (erro, batem) => {
+            if(erro) {
+                return res.status(400).json(erro);
+            }
+
+            if(batem) { 
+                const token = jwt.sign({id: usuario._id}, SECRET, {expiresIn: '1 hr'});
+                res.json({auth:true, token:token});
+            } else {
+                return res.status(400).json({message: 'Senha incorreta'});
+            }
+        })
+    })
 })
 
 module.exports = router;
