@@ -20,7 +20,7 @@ const listaDeTokens = [];
 
 function verificaJWTadmin(req,res,next) {
     const token = req.headers['authorization'];
-    const index = listaDeTokens.findIndex((t) => t == token);  //Verifica se o token ja sofreu logout
+    const index = listaDeTokens.findIndex((t) => t == token);
 
     if(index != -1) {
         return res.status(400).end();
@@ -50,7 +50,7 @@ function verificaJWTadmin(req,res,next) {
 
 function verificaJwt(req,res,next) {
     const token = req.headers['authorization']
-    const index = listaDeTokens.findIndex((t) => t == token);  //Verifica se o token ja sofreu logout
+    const index = listaDeTokens.findIndex((t) => t == token);
 
     if(index != -1) {
         return res.status(400).end();
@@ -77,7 +77,11 @@ function verificaJwt(req,res,next) {
 //Sobremesas
 
 router.get('/sobremesas', verificaJWTadmin, (req,res) => {
-    Sobremesa.find().then((sobremesas) => {
+    const limite = parseInt(req.query.limite) || 5;
+    const pagina = parseInt(req.query.pagina) || 1;
+    const skip = limite * (pagina - 1);
+
+    Sobremesa.find().skip(skip).limit(limite).then((sobremesas) => {
         res.status(200).json(sobremesas);
     }).catch((erro) => {
         res.status(500).json({erro: 'Houve um erro'});
@@ -161,7 +165,11 @@ router.delete('/sobremesas/:id', verificaJWTadmin, (req,res) => {
 //Pratos Principais
 
 router.get('/pratos-principais', verificaJWTadmin, (req,res) => {
-    PratoPrincipal.find().then((pratosPrincipais) => {
+    const limite = parseInt(req.query.limite) || 5;
+    const pagina = parseInt(req.query.pagina) || 1;
+    const skip = limite * (pagina - 1);
+    
+    PratoPrincipal.find().skip(skip).limit(limite).then((pratosPrincipais) => {
         res.status(200).json(pratosPrincipais);
     }).catch((erro) => {
         res.status(500).json({erro: 'Houve um erro'});
@@ -241,7 +249,11 @@ router.delete('/pratos-principais/:id', verificaJWTadmin, (req,res) => {
 //Pedidos
 
 router.get('/pedidos', (req,res) => {
-    Pedido.find().populate('pratoPrincipal').populate('sobremesa').then((pedidos) => {
+    const limite = parseInt(req.query.limite) || 5;
+    const pagina = parseInt(req.query.pagina) || 1;
+    const skip = limite * (pagina - 1);
+    
+    Pedido.find().skip(skip).limit(limite).populate('pratoPrincipal').populate('sobremesa').then((pedidos) => {
         res.status(200).json(pedidos);
     }).catch((erro) => {
         res.status(500).json({erro: 'Houve um erro'});
@@ -341,12 +353,12 @@ router.post('/pedidos/secreto', verificaJwt, (req,res) => {
 
             const pratoAleatorio = pratos[Math.floor(Math.random() * pratos.length)]
             const sobremesaAleatoria = sobremesas2[Math.floor(Math.random() * sobremesas2.length)];
-            const mesaAleatoria = Math.floor(Math.random() * 10) + 1;
             
             const novoPedido = {
-                mesa: mesaAleatoria,
+                mesa: req.body.mesa,
                 pratoPrincipal: pratoAleatorio._id,
-                sobremesa: sobremesaAleatoria._id
+                sobremesa: sobremesaAleatoria._id,
+                observacao: 'Pedido gerado aleatoriamente'
             }
 
             new Pedido(novoPedido).save().then((pedidoAleatorio) => {
@@ -365,7 +377,11 @@ router.post('/pedidos/secreto', verificaJwt, (req,res) => {
 //Usuarios (funções de usuários somente para admins)
 
 router.get('/usuarios', verificaJWTadmin, (req,res) => {
-    Usuario.find().then((usuarios) => {
+    const limite = parseInt(req.query.limite) || 5;
+    const pagina = parseInt(req.query.pagina) || 1;
+    const skip = limite * (pagina - 1);
+    
+    Usuario.find().skip().limit(limite).then((usuarios) => {
         res.status(200).json(usuarios);
     }).catch((erro) => {
         res.status(500).json(erro);
