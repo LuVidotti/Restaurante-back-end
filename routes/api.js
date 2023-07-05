@@ -331,6 +331,37 @@ router.delete('/pedidos/:id', verificaJwt, (req,res) => {
     })
 })
 
+//Logica de negocio
+
+router.post('/pedidos/secreto', verificaJwt, (req,res) => {
+    PratoPrincipal.find().then((pratosPrincipais) => {
+        Sobremesa.find().then((sobremesas) => {
+            const pratos = pratosPrincipais;
+            const sobremesas2 = sobremesas;
+
+            const pratoAleatorio = pratos[Math.floor(Math.random() * pratos.length)]
+            const sobremesaAleatoria = sobremesas2[Math.floor(Math.random() * sobremesas2.length)];
+            const mesaAleatoria = Math.floor(Math.random() * 10) + 1;
+            
+            const novoPedido = {
+                mesa: mesaAleatoria,
+                pratoPrincipal: pratoAleatorio._id,
+                sobremesa: sobremesaAleatoria._id
+            }
+
+            new Pedido(novoPedido).save().then((pedidoAleatorio) => {
+                res.status(201).json({message: 'Pedido aleatorio gerado com sucesso', pedidoAleatorio:pedidoAleatorio});
+            }).catch((erro) => {
+                res.status(500).json(erro);
+            })
+        })
+    })
+
+    
+
+    
+})
+
 //Usuarios (funções de usuários somente para admins)
 
 router.get('/usuarios', verificaJWTadmin, (req,res) => {
