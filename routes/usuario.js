@@ -72,11 +72,6 @@ router.get('/login', (req,res) => {
 })
 
 router.post('/loginpage', (req,res,next) => {
-    Usuario.findOne({email:req.body.email}).then((usuario) => {
-        usuario.numero = usuario.numero + 1;
-
-        usuario.save();
-    })
     passport.authenticate('local', {
         successRedirect: '/',
         failureRedirect: '/usuarios/login',

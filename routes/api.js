@@ -480,6 +480,45 @@ router.post('/usuarios/registro', (req,res) => {
     }
 })
 
+//perfil de usuario
+
+router.get('/usuarios/perfil', verificaJwt, (req,res) => {
+    if(req.user) {
+        res.status(200).json(req.user);
+    } else {
+        res.status(401).json({message: 'Precisa estar logado para ver seu perfil'});
+    }
+})
+
+router.put('/usuarios/perfil/:id', verificaJwt, (req,res) => {
+    var erros = [];
+
+    if(!req.body.nome || typeof req.body.nome == undefined || req.body.nome == null) {
+        erros.push({texto: 'nome inválido'})
+    }
+
+    if(!req.body.email || typeof req.body.email == undefined || req.body.email == null) {
+        erros.push({texto: 'E-mail inválido'});
+    }
+
+    if(erros.length > 0) {
+        return res.status(400).json(erros);
+    } else {
+        Usuario.findOne({_id:req.params.id}).then((usuario) => {
+            usuario.email = req.body.email;
+            usuario.nome = req.body.nome;
+
+            usuario.save().then((usuarioAtt) => {
+                res.status(201).json({message: "Perfil atualizado com sucesso!!!", usuarioAtt:usuarioAtt});
+            }).catch((erro) => {
+                return res.status(500).json(erro);
+            })
+        }).catch((erro) => {
+            res.status(500).json(erro);
+        })
+    }
+})
+
 //Login com jwt
 
 router.post('/usuarios/login', (req,res) => {
